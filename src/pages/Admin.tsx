@@ -596,7 +596,7 @@ const Admin = () => {
                 ))}
               </select>
               {/* Export buttons */}
-              <button onClick={exportOrdersExcel} className="flex items-center gap-1.5 rounded-full border border-emerald-600/40 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors">
+              <button onClick={exportOrdersExcel} className="flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent hover:bg-accent/20 transition-colors">
                 <FileSpreadsheet className="h-3.5 w-3.5" />
                 Excel
               </button>
