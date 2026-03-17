@@ -9,6 +9,7 @@ import { UserProvider } from "@/context/UserContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
+import MisPedidos from "./pages/MisPedidos";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/admin" element={<Admin />} />
+                  <Route path="/mis-pedidos" element={<MisPedidos />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
