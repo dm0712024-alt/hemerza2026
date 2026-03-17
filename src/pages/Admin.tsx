@@ -386,21 +386,6 @@ const Admin = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {/* Export buttons */}
-            <div className="hidden sm:flex items-center gap-2">
-              <button onClick={exportAllExcel} className="flex items-center gap-1.5 rounded-full bg-accent/10 border border-accent/30 px-3 py-2 text-xs font-semibold text-accent hover:bg-accent/20 transition-all">
-                <FileSpreadsheet className="h-3.5 w-3.5" />
-                Excel Completo
-              </button>
-              <button onClick={exportOrdersCsv} className="flex items-center gap-1.5 rounded-full border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-foreground transition-all">
-                <FileText className="h-3.5 w-3.5" />
-                CSV
-              </button>
-            </div>
-            <button onClick={exportAllExcel} className="flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-2 text-xs font-semibold text-accent hover:bg-accent/20 transition-all sm:hidden">
-              <Download className="h-3.5 w-3.5" />
-              Exportar
-            </button>
             <button onClick={fetchData} className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:border-foreground transition-all">
               <RefreshCw className="h-4 w-4" />
               <span className="hidden sm:inline">Actualizar</span>
