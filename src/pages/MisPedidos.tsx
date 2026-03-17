@@ -52,6 +52,19 @@ const MisPedidos = () => {
   const [loading, setLoading] = useState(false);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [copiedOrderId, setCopiedOrderId] = useState<string | null>(null);
+
+  const handleShareOrder = async (orderNumber: string, orderId: string) => {
+    const url = `${window.location.origin}/pedido/${orderNumber}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedOrderId(orderId);
+      setTimeout(() => setCopiedOrderId(null), 2500);
+    } catch {
+      // fallback for older browsers
+      window.open(url, "_blank");
+    }
+  };
 
   const fetchOrders = async (phone: string) => {
     setLoading(true);
