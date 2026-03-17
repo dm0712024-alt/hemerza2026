@@ -52,6 +52,18 @@ const StatCard = ({ icon: Icon, label, value, sub }: { icon: typeof Users; label
   </div>
 );
 
+// Excel export utility
+const downloadExcel = (filename: string, sheetsData: { name: string; headers: string[]; rows: string[][] }[]) => {
+  const wb = XLSX.utils.book_new();
+  sheetsData.forEach(({ name, headers, rows }) => {
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    // Style header row width
+    ws["!cols"] = headers.map(() => ({ wch: 20 }));
+    XLSX.utils.book_append_sheet(wb, ws, name);
+  });
+  XLSX.writeFile(wb, filename);
+};
+
 // CSV export utility
 const downloadCsv = (filename: string, headers: string[], rows: string[][]) => {
   const csvContent = [
