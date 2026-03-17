@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, Fragment } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
-import { Users, ShoppingBag, DollarSign, TrendingUp, Download, RefreshCw, ArrowLeft, Search, ChevronDown, ChevronUp, FileSpreadsheet, Lock, Eye, EyeOff, LogOut } from "lucide-react";
+import { Users, ShoppingBag, DollarSign, TrendingUp, Download, RefreshCw, ArrowLeft, Search, ChevronDown, ChevronUp, FileSpreadsheet, Lock, Eye, EyeOff, LogOut, FileText, Filter } from "lucide-react";
+import * as XLSX from "xlsx";
 
 const ADMIN_PASSWORD = "hemerza2026";
 
@@ -50,6 +51,18 @@ const StatCard = ({ icon: Icon, label, value, sub }: { icon: typeof Users; label
     {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
   </div>
 );
+
+// Excel export utility
+const downloadExcel = (filename: string, sheetsData: { name: string; headers: string[]; rows: string[][] }[]) => {
+  const wb = XLSX.utils.book_new();
+  sheetsData.forEach(({ name, headers, rows }) => {
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    // Style header row width
+    ws["!cols"] = headers.map(() => ({ wch: 20 }));
+    XLSX.utils.book_append_sheet(wb, ws, name);
+  });
+  XLSX.writeFile(wb, filename);
+};
 
 // CSV export utility
 const downloadCsv = (filename: string, headers: string[], rows: string[][]) => {
@@ -136,6 +149,9 @@ const Admin = () => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [orderSearch, setOrderSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("todos");
+  const [paymentFilter, setPaymentFilter] = useState("todos");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [generatingPdf, setGeneratingPdf] = useState<string | null>(null);
   const pdfRef = useRef<HTMLDivElement>(null);
@@ -162,18 +178,9 @@ const Admin = () => {
     setAuthenticated(false);
   };
 
-  // Export functions
-  const exportCustomersCsv = () => {
-    const headers = ["Nombre", "Teléfono", "Instagram", "Email", "Fecha de registro"];
-    const rows = customers.map(c => [
-      c.name, c.phone, `@${c.instagram}`, c.email || "", new Date(c.created_at).toLocaleDateString("es-PA"),
-    ]);
-    downloadCsv(`hemerza-clientes-${new Date().toISOString().split("T")[0]}.csv`, headers, rows);
-  };
-
-  const exportOrdersCsv = () => {
+  const getOrdersForExport = (ordersToExport: Order[]) => {
     const headers = ["Orden", "Cliente", "Teléfono", "Instagram", "Método de pago", "Total (USD)", "Estado", "Fecha", "Productos"];
-    const rows = orders.map(order => {
+    const rows = ordersToExport.map(order => {
       const customer = (order as any).customers;
       const items = orderItems.filter(i => i.order_id === order.id);
       const productsList = items.map(i => `${i.product_name} (${i.size} x${i.quantity})`).join("; ");
@@ -189,7 +196,48 @@ const Admin = () => {
         productsList,
       ];
     });
+    return { headers, rows };
+  };
+
+  // Export functions
+  const exportCustomersCsv = () => {
+    const headers = ["Nombre", "Teléfono", "Instagram", "Email", "Fecha de registro"];
+    const rows = customers.map(c => [
+      c.name, c.phone, `@${c.instagram}`, c.email || "", new Date(c.created_at).toLocaleDateString("es-PA"),
+    ]);
+    downloadCsv(`hemerza-clientes-${new Date().toISOString().split("T")[0]}.csv`, headers, rows);
+  };
+
+  const exportCustomersExcel = () => {
+    const headers = ["Nombre", "Teléfono", "Instagram", "Email", "Fecha de registro"];
+    const rows = customers.map(c => [
+      c.name, c.phone, `@${c.instagram}`, c.email || "", new Date(c.created_at).toLocaleDateString("es-PA"),
+    ]);
+    downloadExcel(`hemerza-clientes-${new Date().toISOString().split("T")[0]}.xlsx`, [
+      { name: "Clientes", headers, rows }
+    ]);
+  };
+
+  const exportOrdersCsv = () => {
+    const { headers, rows } = getOrdersForExport(filteredOrders);
     downloadCsv(`hemerza-pedidos-${new Date().toISOString().split("T")[0]}.csv`, headers, rows);
+  };
+
+  const exportOrdersExcel = () => {
+    const { headers, rows } = getOrdersForExport(filteredOrders);
+    downloadExcel(`hemerza-pedidos-${new Date().toISOString().split("T")[0]}.xlsx`, [
+      { name: "Pedidos", headers, rows }
+    ]);
+  };
+
+  const exportAllExcel = () => {
+    const custHeaders = ["Nombre", "Teléfono", "Instagram", "Email", "Fecha de registro"];
+    const custRows = customers.map(c => [c.name, c.phone, `@${c.instagram}`, c.email || "", new Date(c.created_at).toLocaleDateString("es-PA")]);
+    const { headers: ordHeaders, rows: ordRows } = getOrdersForExport(orders);
+    downloadExcel(`hemerza-completo-${new Date().toISOString().split("T")[0]}.xlsx`, [
+      { name: "Pedidos", headers: ordHeaders, rows: ordRows },
+      { name: "Clientes", headers: custHeaders, rows: custRows },
+    ]);
   };
 
   const exportAllCsv = () => {
@@ -241,6 +289,17 @@ const Admin = () => {
     c.phone.includes(search) ||
     c.instagram.toLowerCase().includes(search.toLowerCase())
   );
+
+  const filteredOrders = orders.filter(o => {
+    const customer = (o as any).customers;
+    const matchesSearch = !orderSearch ||
+      o.order_number.toLowerCase().includes(orderSearch.toLowerCase()) ||
+      customer?.name?.toLowerCase().includes(orderSearch.toLowerCase()) ||
+      customer?.instagram?.toLowerCase().includes(orderSearch.toLowerCase());
+    const matchesStatus = statusFilter === "todos" || o.status === statusFilter;
+    const matchesPayment = paymentFilter === "todos" || o.payment_method === paymentFilter;
+    return matchesSearch && matchesStatus && matchesPayment;
+  });
 
   const generatePdf = async (customer: Customer) => {
     setGeneratingPdf(customer.id);
@@ -329,16 +388,16 @@ const Admin = () => {
           <div className="flex items-center gap-2">
             {/* Export buttons */}
             <div className="hidden sm:flex items-center gap-2">
-              <button onClick={exportCustomersCsv} className="flex items-center gap-1.5 rounded-full border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-foreground transition-all">
+              <button onClick={exportAllExcel} className="flex items-center gap-1.5 rounded-full bg-accent/10 border border-accent/30 px-3 py-2 text-xs font-semibold text-accent hover:bg-accent/20 transition-all">
                 <FileSpreadsheet className="h-3.5 w-3.5" />
-                Clientes CSV
+                Excel Completo
               </button>
               <button onClick={exportOrdersCsv} className="flex items-center gap-1.5 rounded-full border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-foreground transition-all">
-                <FileSpreadsheet className="h-3.5 w-3.5" />
-                Pedidos CSV
+                <FileText className="h-3.5 w-3.5" />
+                CSV
               </button>
             </div>
-            <button onClick={exportAllCsv} className="flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-2 text-xs font-semibold text-accent hover:bg-accent/20 transition-all sm:hidden">
+            <button onClick={exportAllExcel} className="flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-2 text-xs font-semibold text-accent hover:bg-accent/20 transition-all sm:hidden">
               <Download className="h-3.5 w-3.5" />
               Exportar
             </button>
@@ -497,12 +556,55 @@ const Admin = () => {
 
         {/* Orders Table */}
         <div className="rounded-2xl border border-border bg-card shadow-card">
-          <div className="flex items-center justify-between border-b border-border px-6 py-4">
-            <h3 className="font-serif text-lg font-bold text-foreground">Pedidos</h3>
-            <button onClick={exportOrdersCsv} className="flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-2 text-xs font-semibold text-accent hover:bg-accent/20 transition-colors">
-              <Download className="h-3.5 w-3.5" />
-              CSV
-            </button>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-6 py-4">
+            <div>
+              <h3 className="font-serif text-lg font-bold text-foreground">Pedidos</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">{filteredOrders.length} de {orders.length} pedidos</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Buscar pedido..."
+                  value={orderSearch}
+                  onChange={(e) => setOrderSearch(e.target.value)}
+                  className="rounded-full border border-border bg-muted/30 py-2 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent w-40"
+                />
+              </div>
+              {/* Status filter */}
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="rounded-full border border-border bg-background px-3 py-2 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+              >
+                <option value="todos">Todos los estados</option>
+                {["pendiente", "confirmado", "enviado", "completado", "cancelado"].map(s => (
+                  <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                ))}
+              </select>
+              {/* Payment filter */}
+              <select
+                value={paymentFilter}
+                onChange={(e) => setPaymentFilter(e.target.value)}
+                className="rounded-full border border-border bg-background px-3 py-2 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+              >
+                <option value="todos">Todos los pagos</option>
+                {["efectivo", "yappy", "transferencia"].map(p => (
+                  <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
+                ))}
+              </select>
+              {/* Export buttons */}
+              <button onClick={exportOrdersExcel} className="flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent hover:bg-accent/20 transition-colors">
+                <FileSpreadsheet className="h-3.5 w-3.5" />
+                Excel
+              </button>
+              <button onClick={exportOrdersCsv} className="flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-2 text-xs font-semibold text-accent hover:bg-accent/20 transition-colors">
+                <FileText className="h-3.5 w-3.5" />
+                CSV
+              </button>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -519,7 +621,7 @@ const Admin = () => {
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order) => (
+                {filteredOrders.map((order) => (
                   <Fragment key={order.id}>
                     <tr className="border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}>
                       <td className="px-6 py-4 text-xs font-mono text-muted-foreground">{order.id.slice(0, 8).toUpperCase()}</td>
@@ -571,10 +673,10 @@ const Admin = () => {
                     )}
                   </Fragment>
                 ))}
-                {orders.length === 0 && (
+                {filteredOrders.length === 0 && (
                   <tr>
                     <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground">
-                      No hay pedidos registrados aún
+                      {orders.length === 0 ? "No hay pedidos registrados aún" : "No se encontraron resultados con los filtros aplicados"}
                     </td>
                   </tr>
                 )}
@@ -582,6 +684,8 @@ const Admin = () => {
             </table>
           </div>
         </div>
+
+        {/* Customers table export buttons - add excel */}
       </main>
 
       <div ref={pdfRef} className="hidden" />
