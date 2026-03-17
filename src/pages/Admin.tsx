@@ -388,16 +388,16 @@ const Admin = () => {
           <div className="flex items-center gap-2">
             {/* Export buttons */}
             <div className="hidden sm:flex items-center gap-2">
-              <button onClick={exportCustomersCsv} className="flex items-center gap-1.5 rounded-full border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-foreground transition-all">
+              <button onClick={exportAllExcel} className="flex items-center gap-1.5 rounded-full bg-green-600/10 border border-green-600/30 px-3 py-2 text-xs font-semibold text-green-700 hover:bg-green-600/20 transition-all">
                 <FileSpreadsheet className="h-3.5 w-3.5" />
-                Clientes CSV
+                Excel
               </button>
               <button onClick={exportOrdersCsv} className="flex items-center gap-1.5 rounded-full border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-foreground transition-all">
-                <FileSpreadsheet className="h-3.5 w-3.5" />
-                Pedidos CSV
+                <FileText className="h-3.5 w-3.5" />
+                CSV
               </button>
             </div>
-            <button onClick={exportAllCsv} className="flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-2 text-xs font-semibold text-accent hover:bg-accent/20 transition-all sm:hidden">
+            <button onClick={exportAllExcel} className="flex items-center gap-1.5 rounded-full bg-green-600/10 px-3 py-2 text-xs font-semibold text-green-700 hover:bg-green-600/20 transition-all sm:hidden">
               <Download className="h-3.5 w-3.5" />
               Exportar
             </button>
