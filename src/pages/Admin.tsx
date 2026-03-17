@@ -556,12 +556,55 @@ const Admin = () => {
 
         {/* Orders Table */}
         <div className="rounded-2xl border border-border bg-card shadow-card">
-          <div className="flex items-center justify-between border-b border-border px-6 py-4">
-            <h3 className="font-serif text-lg font-bold text-foreground">Pedidos</h3>
-            <button onClick={exportOrdersCsv} className="flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-2 text-xs font-semibold text-accent hover:bg-accent/20 transition-colors">
-              <Download className="h-3.5 w-3.5" />
-              CSV
-            </button>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-6 py-4">
+            <div>
+              <h3 className="font-serif text-lg font-bold text-foreground">Pedidos</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">{filteredOrders.length} de {orders.length} pedidos</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Buscar pedido..."
+                  value={orderSearch}
+                  onChange={(e) => setOrderSearch(e.target.value)}
+                  className="rounded-full border border-border bg-muted/30 py-2 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent w-40"
+                />
+              </div>
+              {/* Status filter */}
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="rounded-full border border-border bg-background px-3 py-2 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+              >
+                <option value="todos">Todos los estados</option>
+                {["pendiente", "confirmado", "enviado", "completado", "cancelado"].map(s => (
+                  <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                ))}
+              </select>
+              {/* Payment filter */}
+              <select
+                value={paymentFilter}
+                onChange={(e) => setPaymentFilter(e.target.value)}
+                className="rounded-full border border-border bg-background px-3 py-2 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+              >
+                <option value="todos">Todos los pagos</option>
+                {["efectivo", "yappy", "transferencia"].map(p => (
+                  <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
+                ))}
+              </select>
+              {/* Export buttons */}
+              <button onClick={exportOrdersExcel} className="flex items-center gap-1.5 rounded-full border border-emerald-600/40 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors">
+                <FileSpreadsheet className="h-3.5 w-3.5" />
+                Excel
+              </button>
+              <button onClick={exportOrdersCsv} className="flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-2 text-xs font-semibold text-accent hover:bg-accent/20 transition-colors">
+                <FileText className="h-3.5 w-3.5" />
+                CSV
+              </button>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -578,7 +621,7 @@ const Admin = () => {
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order) => (
+                {filteredOrders.map((order) => (
                   <Fragment key={order.id}>
                     <tr className="border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}>
                       <td className="px-6 py-4 text-xs font-mono text-muted-foreground">{order.id.slice(0, 8).toUpperCase()}</td>
@@ -630,10 +673,10 @@ const Admin = () => {
                     )}
                   </Fragment>
                 ))}
-                {orders.length === 0 && (
+                {filteredOrders.length === 0 && (
                   <tr>
                     <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground">
-                      No hay pedidos registrados aún
+                      {orders.length === 0 ? "No hay pedidos registrados aún" : "No se encontraron resultados con los filtros aplicados"}
                     </td>
                   </tr>
                 )}
@@ -641,6 +684,8 @@ const Admin = () => {
             </table>
           </div>
         </div>
+
+        {/* Customers table export buttons - add excel */}
       </main>
 
       <div ref={pdfRef} className="hidden" />
