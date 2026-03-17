@@ -137,6 +137,13 @@ const Navbar = () => {
                   {t(link.labelKey)}
                 </button>
               ))}
+              <button
+                onClick={() => { setIsOpen(false); navigate("/mis-pedidos"); }}
+                className="flex items-center gap-2 text-left text-base font-medium text-foreground"
+              >
+                <Package className="h-4 w-4 text-accent" />
+                Mis Pedidos
+              </button>
             </div>
           </motion.div>
         )}
