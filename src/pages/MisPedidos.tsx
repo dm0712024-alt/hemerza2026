@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ShoppingBag, Package, Clock, CheckCircle2, Truck, XCircle, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Package, Clock, CheckCircle2, Truck, XCircle, ChevronDown, ChevronUp, RefreshCw, Share2, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/context/UserContext";
