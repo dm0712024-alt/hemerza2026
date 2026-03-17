@@ -9,7 +9,37 @@ import { UserProvider } from "@/context/UserContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
+import MisPedidos from "./pages/MisPedidos";
 import NotFound from "./pages/NotFound";
+
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <ThemeProvider>
+        <LanguageProvider>
+          <UserProvider>
+            <CartProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/mis-pedidos" element={<MisPedidos />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </CartProvider>
+          </UserProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
+
+export default App;
 
 const queryClient = new QueryClient();
 
