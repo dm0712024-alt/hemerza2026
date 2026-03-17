@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, Fragment } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
-import { Users, ShoppingBag, DollarSign, TrendingUp, Download, RefreshCw, ArrowLeft, Search, ChevronDown, ChevronUp, FileSpreadsheet, Lock, Eye, EyeOff, LogOut } from "lucide-react";
+import { Users, ShoppingBag, DollarSign, TrendingUp, Download, RefreshCw, ArrowLeft, Search, ChevronDown, ChevronUp, FileSpreadsheet, Lock, Eye, EyeOff, LogOut, FileText, Filter } from "lucide-react";
+import * as XLSX from "xlsx";
 
 const ADMIN_PASSWORD = "hemerza2026";
 
