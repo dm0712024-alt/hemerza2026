@@ -290,6 +290,17 @@ const Admin = () => {
     c.instagram.toLowerCase().includes(search.toLowerCase())
   );
 
+  const filteredOrders = orders.filter(o => {
+    const customer = (o as any).customers;
+    const matchesSearch = !orderSearch ||
+      o.order_number.toLowerCase().includes(orderSearch.toLowerCase()) ||
+      customer?.name?.toLowerCase().includes(orderSearch.toLowerCase()) ||
+      customer?.instagram?.toLowerCase().includes(orderSearch.toLowerCase());
+    const matchesStatus = statusFilter === "todos" || o.status === statusFilter;
+    const matchesPayment = paymentFilter === "todos" || o.payment_method === paymentFilter;
+    return matchesSearch && matchesStatus && matchesPayment;
+  });
+
   const generatePdf = async (customer: Customer) => {
     setGeneratingPdf(customer.id);
     const customerOrders = orders.filter(o => o.customer_id === customer.id);
