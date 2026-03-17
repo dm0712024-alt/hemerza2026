@@ -149,6 +149,9 @@ const Admin = () => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [orderSearch, setOrderSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("todos");
+  const [paymentFilter, setPaymentFilter] = useState("todos");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [generatingPdf, setGeneratingPdf] = useState<string | null>(null);
   const pdfRef = useRef<HTMLDivElement>(null);
@@ -175,18 +178,9 @@ const Admin = () => {
     setAuthenticated(false);
   };
 
-  // Export functions
-  const exportCustomersCsv = () => {
-    const headers = ["Nombre", "Teléfono", "Instagram", "Email", "Fecha de registro"];
-    const rows = customers.map(c => [
-      c.name, c.phone, `@${c.instagram}`, c.email || "", new Date(c.created_at).toLocaleDateString("es-PA"),
-    ]);
-    downloadCsv(`hemerza-clientes-${new Date().toISOString().split("T")[0]}.csv`, headers, rows);
-  };
-
-  const exportOrdersCsv = () => {
+  const getOrdersForExport = (ordersToExport: Order[]) => {
     const headers = ["Orden", "Cliente", "Teléfono", "Instagram", "Método de pago", "Total (USD)", "Estado", "Fecha", "Productos"];
-    const rows = orders.map(order => {
+    const rows = ordersToExport.map(order => {
       const customer = (order as any).customers;
       const items = orderItems.filter(i => i.order_id === order.id);
       const productsList = items.map(i => `${i.product_name} (${i.size} x${i.quantity})`).join("; ");
@@ -202,7 +196,48 @@ const Admin = () => {
         productsList,
       ];
     });
+    return { headers, rows };
+  };
+
+  // Export functions
+  const exportCustomersCsv = () => {
+    const headers = ["Nombre", "Teléfono", "Instagram", "Email", "Fecha de registro"];
+    const rows = customers.map(c => [
+      c.name, c.phone, `@${c.instagram}`, c.email || "", new Date(c.created_at).toLocaleDateString("es-PA"),
+    ]);
+    downloadCsv(`hemerza-clientes-${new Date().toISOString().split("T")[0]}.csv`, headers, rows);
+  };
+
+  const exportCustomersExcel = () => {
+    const headers = ["Nombre", "Teléfono", "Instagram", "Email", "Fecha de registro"];
+    const rows = customers.map(c => [
+      c.name, c.phone, `@${c.instagram}`, c.email || "", new Date(c.created_at).toLocaleDateString("es-PA"),
+    ]);
+    downloadExcel(`hemerza-clientes-${new Date().toISOString().split("T")[0]}.xlsx`, [
+      { name: "Clientes", headers, rows }
+    ]);
+  };
+
+  const exportOrdersCsv = () => {
+    const { headers, rows } = getOrdersForExport(filteredOrders);
     downloadCsv(`hemerza-pedidos-${new Date().toISOString().split("T")[0]}.csv`, headers, rows);
+  };
+
+  const exportOrdersExcel = () => {
+    const { headers, rows } = getOrdersForExport(filteredOrders);
+    downloadExcel(`hemerza-pedidos-${new Date().toISOString().split("T")[0]}.xlsx`, [
+      { name: "Pedidos", headers, rows }
+    ]);
+  };
+
+  const exportAllExcel = () => {
+    const custHeaders = ["Nombre", "Teléfono", "Instagram", "Email", "Fecha de registro"];
+    const custRows = customers.map(c => [c.name, c.phone, `@${c.instagram}`, c.email || "", new Date(c.created_at).toLocaleDateString("es-PA")]);
+    const { headers: ordHeaders, rows: ordRows } = getOrdersForExport(orders);
+    downloadExcel(`hemerza-completo-${new Date().toISOString().split("T")[0]}.xlsx`, [
+      { name: "Pedidos", headers: ordHeaders, rows: ordRows },
+      { name: "Clientes", headers: custHeaders, rows: custRows },
+    ]);
   };
 
   const exportAllCsv = () => {
