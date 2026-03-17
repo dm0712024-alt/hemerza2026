@@ -27,8 +27,7 @@ interface OrderEmailPayload {
   payment_label: string;
 }
 
-// ⚠️ Cambia esto al email donde quieres recibir notificaciones de pedidos
-const ADMIN_EMAIL = "hemerza.store@gmail.com";
+const ADMIN_EMAIL = "ale2577151@maricopa.edu";
 
 const paymentInstructions: Record<string, string> = {
   efectivo: "💵 Pago en efectivo al momento de la entrega.",
