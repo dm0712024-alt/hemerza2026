@@ -240,6 +240,18 @@ const MisPedidos = () => {
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
                       <span className="font-serif text-lg font-bold text-foreground">${order.total}</span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleShareOrder(order.order_number, order.id); }}
+                        className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-semibold transition-all ${
+                          copiedOrderId === order.id
+                            ? "border-accent bg-accent/10 text-accent"
+                            : "border-border text-muted-foreground hover:border-accent hover:text-accent"
+                        }`}
+                        aria-label="Compartir pedido"
+                      >
+                        {copiedOrderId === order.id ? <Check className="h-3 w-3" /> : <Share2 className="h-3 w-3" />}
+                        {copiedOrderId === order.id ? "¡Copiado!" : "Compartir"}
+                      </button>
                       {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                     </div>
                   </div>
